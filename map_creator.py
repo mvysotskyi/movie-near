@@ -7,11 +7,11 @@ from math import sqrt, sin, cos, radians, asin
 from collections import Counter
 
 import folium
-from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
+from geopy.exc import GeocoderTimedOut, GeocoderUnavailable, GeocoderServiceError
 from geopy.extra.rate_limiter import RateLimiter
 from geopy.geocoders import Nominatim
 
-geolocator = Nominatim(user_agent="pn-lab1-task2")
+geolocator = Nominatim(user_agent="movie-near")
 geocode = RateLimiter(geolocator.geocode, min_delay_seconds=1)
 
 def distance(point1: tuple[float, float], point2: tuple[float, float]) -> float:
@@ -44,8 +44,8 @@ def get_coordinates(location: str) -> tuple[float, float]:
     """
     try:
         coords = geolocator.geocode(location)
-    except (GeocoderUnavailable, GeocoderTimedOut) as error:
-        print(f"Error {error} in: {location}")
+    except (GeocoderUnavailable, GeocoderTimedOut, GeocoderServiceError) as error:
+        print(f"Error {error.strerror} in: {location}")
         coords = None
 
     return (coords.latitude, coords.longitude) if coords else None
@@ -56,19 +56,22 @@ def unificate_points(points: list[tuple[float, float]]) -> list[tuple[float, flo
 
     points: list of points
     """
-    distribution = 0.001
-    unificate = []
+    distribution = 0.01
+    unificated = []
     counts = Counter(points)
 
     for point in points:
+        if not point:
+            continue
+
         if counts[point] != 1:
             delta_x = uniform(-distribution, distribution)
             delta_y = uniform(-distribution, distribution)
             point = (point[0] + delta_x, point[1] + delta_y)
 
-            unificate.append(point)
+        unificated.append(point)
 
-    return unificate
+    return unificated
 
 def nearest_points(
     origin: tuple[float, float],
@@ -83,8 +86,8 @@ def nearest_points(
     n_first: number of nearest points
     """
     locations = [get_coordinates(location) for location in locations]
-    locations.sort(key=lambda location: distance(origin, location))
     locations = unificate_points(locations)
+    locations.sort(key=lambda location: distance(origin, location))
 
     return locations[:min(n_first, len(locations))]
 
@@ -102,6 +105,13 @@ def create_map(
     wmap = folium.Map(location=list(user_coords), zoom_start=10)
     fgroup = folium.FeatureGroup(name="World map")
 
+    # add user marker
+    fgroup.add_child(folium.Marker(
+        location=[user_coords[0], user_coords[1]],
+        icon=folium.Icon(color="red")
+    ))
+
+    # add films markers
     for lat, lon in points:
         fgroup.add_child(folium.Marker(location=[lat, lon], icon=folium.Icon()))
 

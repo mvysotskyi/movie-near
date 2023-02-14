@@ -26,7 +26,6 @@ def main(args: argparse.Namespace) -> None:
 
     dataset = read_dataset(args.dataset)[str(args.year)]
     points = nearest_points(user_coords, dataset, 10)
-
     create_map(args.destination, user_coords, points)
 
 if __name__ == "__main__":
