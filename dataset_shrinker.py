@@ -1,5 +1,5 @@
 """
-Module for generating shorter dataset.
+Module for shrinking dataset.
 """
 
 from random import choice
@@ -7,10 +7,22 @@ from random import choice
 def shrink_dataset(src: str, lines: int, dest: str) -> None:
     """
     Function shrinks dataset.
+
+    src: source dataset file
+    lines: size of shrunk dataset
+    dest: destination dataset file
+
+    >>> shrink_dataset("", 10, "dataset_shrinked.list")
+    Error: invalid source path
     """
     data = []
-    with open(src, "rb") as file:
-        data = file.readlines()
+
+    try:
+        with open(src, "rb") as file:
+            data = file.readlines()
+    except FileNotFoundError:
+        print("Error: invalid source path")
+        return
 
     new_data = []
     rng = list(range(len(data)))
@@ -23,3 +35,7 @@ def shrink_dataset(src: str, lines: int, dest: str) -> None:
 
     with open(dest, "wb") as file:
         file.writelines(new_data)
+
+if __name__ == "__main__":
+    import doctest
+    print(doctest.testmod())
