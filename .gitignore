@@ -1,2 +1,4 @@
 venv
 locations.list
+__pycache__
+Map.html
