@@ -1,5 +1,5 @@
 """
-Main program file.
+Main module of program.
 Reads user input and generates map.
 """
 

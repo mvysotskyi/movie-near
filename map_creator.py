@@ -2,7 +2,9 @@
 Module to create map.
 """
 
-from math import pi, sqrt, atan2, sin, cos
+from random import uniform
+from math import sqrt, sin, cos, radians, asin
+from collections import Counter
 
 import folium
 from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
@@ -16,24 +18,29 @@ def distance(point1: tuple[float, float], point2: tuple[float, float]) -> float:
     """
     Function calculates distance between two points on a map.
     This function have only to estimate distance.
+
+    point1: first point
+    point2: second point
     """
-    pi_180 = pi / 180
+    if not point1 or not point2:
+        return float("inf")
 
-    fi1 = point1[0] * pi_180
-    fi2 = point2[0] * pi_180
+    lat1, lon1 = point1
+    lat2, lon2 = point2
 
-    delta_fi = fi2 - fi1
-    delta_lambda = (point2[1] - point1[1]) * pi_180
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
 
-    number = sin(delta_fi/2) * sin(delta_fi / 2) +\
-        cos(fi2) * cos(fi2) *\
-        sin(delta_lambda / 2) * sin(delta_lambda / 2)
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
 
-    return 2 * atan2(sqrt(number), sqrt(1 - number))
+    num = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    return asin(sqrt(num))
 
 def get_coordinates(location: str) -> tuple[float, float]:
     """
     Function returns coodrinated of location by address name.
+
+    location: location name
     """
     try:
         coords = geolocator.geocode(location)
@@ -41,7 +48,27 @@ def get_coordinates(location: str) -> tuple[float, float]:
         print(f"Error {error} in: {location}")
         coords = None
 
-    return (coords.latitude, coords.longitude) if coords else (float("inf"), float("inf"))
+    return (coords.latitude, coords.longitude) if coords else None
+
+def unificate_points(points: list[tuple[float, float]]) -> list[tuple[float, float]]:
+    """
+    Function unificate points with same coordinates.
+
+    points: list of points
+    """
+    distribution = 0.001
+    unificate = []
+    counts = Counter(points)
+
+    for point in points:
+        if counts[point] != 1:
+            delta_x = uniform(-distribution, distribution)
+            delta_y = uniform(-distribution, distribution)
+            point = (point[0] + delta_x, point[1] + delta_y)
+
+            unificate.append(point)
+
+    return unificate
 
 def nearest_points(
     origin: tuple[float, float],
@@ -49,11 +76,17 @@ def nearest_points(
     n_first: int) -> list[tuple[float, float]]:
     """
     Function returns n_first nearest
-    points to origin
+    points to origin.
+
+    origin: origin point
+    locations: list of locations
+    n_first: number of nearest points
     """
-    locations = list(map(get_coordinates, locations))
+    locations = [get_coordinates(location) for location in locations]
     locations.sort(key=lambda location: distance(origin, location))
-    return locations[:n_first]
+    locations = unificate_points(locations)
+
+    return locations[:min(n_first, len(locations))]
 
 def create_map(
     dest: str,
@@ -61,6 +94,10 @@ def create_map(
     points: list[tuple[int, int]]) -> None:
     """
     Function writes map in .html file.
+
+    dest: path to map file
+    user_coords: user coordinates
+    points: list of points to show on map
     """
     wmap = folium.Map(location=list(user_coords), zoom_start=10)
     fgroup = folium.FeatureGroup(name="World map")
