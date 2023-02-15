@@ -18,17 +18,21 @@ We can use map to explore places that were filmed.
 python main.py 2005 50 25 locations_shrinked.list
 ```
 Also, you can use optional parameter ```--destination``` to set your own name for the map. Default: ```Map.html```.
+```bash
+python main.py 2007 27 -81 locations_shrinked.list --destination=MyMap.html
+```
 
-File ```dataset_shrinker.py``` contains script that can shrink dataset file. It can be useful if you want to use smaller dataset for testing.
-```locations_shrinked.list``` - is a dataset file that was shrinked by dataset_shrinker.py script.
+File ```dataset_shrinker.py``` contains function ```shrink_dataset``` that can shrink dataset file. It can be useful if you want to use smaller dataset for testing.
+```locations_shrinked.list``` is a dataset file that was shrinked by ```shrink_dataset```.
 Original dataset file: [```locations.list```](https://drive.google.com/file/d/11KVCDMVb8H0vKzb8bx7VvqOlBUxUfL6x/view).
 
 
 ## Screenshots
 
-Screenshot for example above.
+Screenshots for examples above.
 
-![App Screenshot](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![Screenshot 1](./screenshots/50_25_2005.png)
+![Screenshot 2](./screenshots/27_-81_2007.png)
 
 
 ## License
