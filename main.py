@@ -2,6 +2,8 @@
 Main module of program.
 Reads user input and generates map.
 """
+
+import os
 from argparse import ArgumentParser, Namespace
 from dataset_reader import read_dataset
 from map_creator import create_map, nearest_points
@@ -23,7 +25,7 @@ def main(args: Namespace) -> None:
     >>> main(Namespace(year=2010, latitude=49.5, longtitude=25.6, dataset="", destination="a.html"))
     Error: invalid paths
     """
-    if not args.dataset or not args.destination:
+    if not os.path.isfile(args.dataset) or not args.destination.endswith(".html"):
         print("Error: invalid paths")
         return
 
